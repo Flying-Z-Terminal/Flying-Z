@@ -11,6 +11,7 @@ export PATH=$PATH:~/.flying-z/scripts:~/.local/bin
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
 ZSH_THEME="hapin-z"
+#ZSH_THEME="hapin-z-light"
 
 autoload -U colors && colors # Fix colors - https://stackoverflow.com/a/2534676/
 
