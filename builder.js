@@ -10,7 +10,7 @@ const build = async () => {
   await exe({
     entry: './dist/dist.js',
     out: buildPath,
-    pkg: ['--compress', 'Brotli', '--config', 'package.json'],
+    pkg: ['--compress', 'Brotli', '--config', './package.json'],
     version: version,
     target: 'latest-win-x64',
     icon: './assets/icons/bold/icon.ico',
@@ -18,7 +18,7 @@ const build = async () => {
     properties: {
       FileDescription: 'Flying-Z Installer',
       ProductName: 'Flying-Z',
-      LegalCopyright: 'Remie Smith',
+      LegalCopyright: '© 2024 Remie Smith',
       CompanyName: 'Remie Smith',
       OriginalFilename: `Flying-Z-${version}.exe`,
     },
