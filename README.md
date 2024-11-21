@@ -34,7 +34,7 @@ While WSL is great, it has limitations: native filesystem access is slow, using 
 
 #### Git Credential Manager
 
-Download the latest [.zip](https://github.com/git-ecosystem/git-credential-manager/releases/download/v2.6.0/gcm-win-x86-2.6.0.zip) and extract to `C:\Flying-Z\usr\libexec\git-core`
+To configure [Git Credential Manager](https://github.com/git-ecosystem/git-credential-manager) you may wish to do the following.
 
 Add to `~/.gitconfig`:
 
