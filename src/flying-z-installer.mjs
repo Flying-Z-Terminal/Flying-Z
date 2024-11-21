@@ -10,6 +10,7 @@ import { installFonts } from './installFonts.mjs';
 import { installZshPlugins } from './installZshPlugins.mjs';
 import { ensureAdmin } from './ensureAdmin.mjs';
 import { runFlyingZTerminal } from './runFlyingZTerminal.mjs';
+import { installGitCredentialManager } from './installGitCredentialManager.mjs';
 import { log } from './logger.mjs';
 
 // @TODO -- Should probably call pauseUponFailure in uncaughtException and unhandledRejection
@@ -48,7 +49,10 @@ const pauseUponFailure = () => {
     await installZshPlugins();
     await copyAdditionalAssets();
 
-    // 6. Install cygserver as a service and generate config file (this will need to be tested on a fresh machine) -- https://superuser.com/questions/738105/how-to-install-cygserver
+    // 7. Install GCM
+    await installGitCredentialManager();
+
+    // 8. Install cygserver as a service and generate config file (this will need to be tested on a fresh machine) -- https://superuser.com/questions/738105/how-to-install-cygserver
     /* 
 
     Nice to haves:
@@ -64,7 +68,7 @@ const pauseUponFailure = () => {
     );
     log.success('Flying-Z installed successfully. Have fun!');
 
-    // 7. Launch Flying-Z
+    // 9. Launch Flying-Z
     await runFlyingZTerminal();
   } catch (err) {
     log.error(err);

@@ -1,9 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import unzipper from 'unzipper';
-import Downloader from 'nodejs-file-downloader';
 import { exec } from 'child_process';
 import { log } from './logger.mjs';
+import { downloadFile, extractZip } from './utils/index.mjs';
 import { DOWNLOAD_PATH, RUN_SOLO } from './constants.mjs';
 
 const FONTS_URL =
@@ -24,33 +23,6 @@ async function execCommand(command) {
       resolve(stdout);
     });
   });
-}
-
-async function downloadFile(url, outputPath) {
-  const downloader = new Downloader({
-    url: url,
-    directory: path.dirname(outputPath),
-    fileName: path.basename(outputPath),
-  });
-
-  try {
-    await downloader.download();
-    log.info(`Downloaded file to ${outputPath}`);
-  } catch (err) {
-    throw new Error(`Failed to download: ${err.message}`);
-  }
-}
-
-async function extractZip(zipPath, extractTo) {
-  try {
-    await fs
-      .createReadStream(zipPath)
-      .pipe(unzipper.Extract({ path: extractTo }))
-      .promise();
-    log.info(`Extracted .zip file to ${extractTo}`);
-  } catch (err) {
-    throw new Error(`Failed to extract zip: ${err.message}`);
-  }
 }
 
 async function copyFontFile(src, dest) {

@@ -1,4 +1,3 @@
-import fs from 'fs';
 import path from 'path';
 import { downloadFile, extractZip } from './utils/index.mjs';
 import { log } from './logger.mjs';
