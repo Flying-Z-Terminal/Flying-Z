@@ -11,7 +11,8 @@ While WSL is great, it has limitations: native filesystem access is slow, using 
 - Polished look with one-click installation
 - Installs [Oh My Zsh](https://ohmyz.sh/)
 - Installs [Zoxide](https://github.com/ajeetdsouza/zoxide)
-- Custom light/dark Windows-focused ZSH theme based on [Hapin](https://github.com/hanamiyuna/hapin-zsh-theme) and other work.
+- Installs [Git Credential Manager](https://github.com/git-ecosystem/git-credential-manager)
+- Custom light/dark Windows-focused ZSH theme based on [Hapin](https://github.com/hanamiyuna/hapin-zsh-theme) and other work
 - Automatic Windows Terminal profile configuration
 - Integration with **Context Menu → Open in Terminal**
 - Linux-style <kbd>Ctrl+Alt+T</kbd> hotkey to open the terminal
@@ -23,18 +24,17 @@ While WSL is great, it has limitations: native filesystem access is slow, using 
 ## Limitations of Flying-Z
 
 - Not a full Linux environment [(Cygwin-based)](https://www.cygwin.com/index.html)
-- `git` status indicators are slow in large repos (help wanted – [TODO - ISSUE LINK])
+- `git` status indicators are slow in large repos [(help wanted)](https://github.com/Flying-Z-Terminal/Flying-Z/issues/3)
 - Hotkey relies on a desktop shortcut and requires logout or reboot to activate
 - Must hold <kbd>Shift</kbd> to select text under certain circumstances
-- Filesystem access can be a bit slow inside virtual machines
 - Terminal icon color cannot be set per theme [(issue)](https://github.com/microsoft/terminal/issues/15264)
-- Some applications can detect paths incorrectly (eg. `subl ~/.zshrc`) (help wanted – [TODO - ISSUE LINK])
+- Some applications can detect paths incorrectly (eg. `subl ~/.zshrc`) [(help wanted)](https://github.com/Flying-Z-Terminal/Flying-Z/issues/2)
 
 ## Tips
 
 #### Git Credential Manager
 
-To configure [Git Credential Manager](https://github.com/git-ecosystem/git-credential-manager) you may wish to do the following.
+To configure Git Credential Manager you may wish to do the following.
 
 Add to `~/.gitconfig`:
 
