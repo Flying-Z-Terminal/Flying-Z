@@ -1,5 +1,7 @@
 # Flying-Z: One-click Cygwin/ZSH Installer for Windows 11
 
+![image](https://github.com/user-attachments/assets/dd7ebac2-d8da-4839-90b9-fc482fb203c2)
+
 ## Why
 
 Working on Linux and macOS most of the time, I wanted a more unified terminal experience when working on Windows.
@@ -34,7 +36,7 @@ While WSL is great, it has limitations: native filesystem access is slow, using 
 
 #### Git Credential Manager
 
-To configure Git Credential Manager you may wish to do the following.
+GCM comes installed, but you'll still need to configure it.
 
 Add to `~/.gitconfig`:
 
