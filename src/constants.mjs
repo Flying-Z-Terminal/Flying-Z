@@ -2,7 +2,9 @@ import path from 'path';
 import os from 'os';
 
 const isPackaged = process.pkg !== undefined;
-const root = isPackaged ? 'C:\\snapshot\\flying-z' : process.cwd();
+
+// IMPORTANT: Casing of Flying-Z here must match the casing of the name in package.json AND the casing of the repo's root directory
+const root = isPackaged ? 'C:\\snapshot\\Flying-Z' : process.cwd();
 
 export const RUN_SOLO = process.argv.includes('--solo');
 
@@ -48,7 +50,6 @@ export const WINDOWS_TERMINAL_JSON_PATH = path.join(
   'settings.json'
 );
 export const DEFAULT_ZSH_RC_PATH = path.join(ASSETS_PATH, 'default.zshrc');
-export const ZSH_RC_INTENDED_PATH = path.join(USER_CYGWIN_HOME, '.zshrc');
 export const THEME_FILE_NAME = 'hapin-z.zsh-theme';
 
 export const COPIED_ASSETS_PATH = path.join(CYGWIN_ROOT, 'assets');
