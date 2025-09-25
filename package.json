@@ -1,6 +1,6 @@
 {
   "name": "flying-z",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "main": "flying-z-installer.mjs",
   "repository": "https://github.com/Flying-Z-Terminal/Flying-Z.git",
   "author": "Remie Smith",
