@@ -1,0 +1,3 @@
+#!/bin/sh
+
+cygpath -w $(pwd)

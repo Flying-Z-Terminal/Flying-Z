@@ -1,0 +1,35 @@
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# Dependency directory
+# https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git
+node_modules
+app/node_modules
+
+# OSX
+.DS_Store
+
+# Keys
+*.p12
+*.pfx
+internals/keys
+
+*.sublime-workspace
+
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+*.env
+
+tmp/*
+
+dist/*
+build/*
+
+*.exe

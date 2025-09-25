@@ -1,0 +1,51 @@
+{
+  "name": "flying-z",
+  "version": "2.5.0",
+  "main": "flying-z-installer.mjs",
+  "repository": "https://github.com/Flying-Z-Terminal/Flying-Z.git",
+  "author": "Remie Smith",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "node ./src/flying-z-installer.mjs",
+    "build": "rimraf dist && rimraf build && yarn esbuild --define:process.env.NODE_ENV=\\\"production\\\" ./src/flying-z-installer.mjs --bundle --minify --platform=node --target=node20 --format=iife --external:@aws-sdk/client-s3 --outfile=dist/dist.js && node builder.js",
+    "downloadCygwin": "node ./src/downloadCygwin.mjs --solo",
+    "installCygwin": "node ./src/installCygwin.mjs --solo",
+    "writeFlyingZInitFile": "node ./src/writeFlyingZInitFile.mjs --solo",
+    "installOhMyZsh": "node ./src/installOhMyZsh.mjs --solo",
+    "addFlyingZToWindowsTerminalJSON": "node ./src/addFlyingZToWindowsTerminalJSON.mjs --solo",
+    "runFlyingZInitFile": "node ./src/runFlyingZInitFile.mjs --solo",
+    "copyAdditionalAssets": "node --inspect-brk ./src/copyAdditionalAssets.mjs --solo",
+    "copyFlyingZThemeFile": "node ./src/copyFlyingZThemeFile.mjs --solo",
+    "installFonts": "node ./src/installFonts.mjs --solo"
+  },
+  "pkg": {
+    "assets": [
+      "./assets/**/*",
+      "./includes/**/*"
+    ]
+  },
+  "devDependencies": {
+    "@angablue/exe": "^2.1.0",
+    "esbuild": "^0.24.0",
+    "eslint": "^8.28.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "2.26.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-sonarjs": "^0.14.0",
+    "eslint-plugin-unicorn": "^45.0.0",
+    "eslint_d": "^12.2.0",
+    "prettier": "^2.8.1",
+    "prettier-eslint": "^15.0.1",
+    "rimraf": "^5.0.0"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "edit-json-file": "^1.8.0",
+    "nodejs-file-downloader": "^4.13.0",
+    "openpgp": "^6.0.0",
+    "strip-json-comments": "^5.0.0",
+    "unzipper": "^0.12.3",
+    "winston": "^3.17.0"
+  }
+}
