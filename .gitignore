@@ -33,3 +33,7 @@ dist/*
 build/*
 
 *.exe
+
+# Yarn Integrity file
+.yarn-integrity
+.yarn/install-state.gz
