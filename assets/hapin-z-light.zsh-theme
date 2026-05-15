@@ -55,7 +55,13 @@ zstyle ':vcs_info:git*+set-message:*' hooks git-untracked
 # Executed before each prompt.
 add-zsh-hook precmd vcs_info
 
+# Cache the Windows-style $PWD for RPROMPT so we only fork `cygpath` on
+# directory change, not on every prompt redraw.
+_hapin_update_pwd_win() { _hapin_pwd_win="$(cygpath -w "$PWD")" }
+add-zsh-hook chpwd _hapin_update_pwd_win
+_hapin_update_pwd_win  # seed for the first prompt before any cd
+
 # Oxide prompt style.
 PROMPT=$'\n%{$hapin_lightblue%}%~%{$hapin_reset_color%} ${vcs_info_msg_0_}\n%(?.%{%F{white}%}.%{$hapin_red%})%(!.#.❯)%{$hapin_reset_color%} '
 
-RPROMPT='%F{#aaa}$(cygpath -w "$PWD")%f'
+RPROMPT='%F{#aaa}${_hapin_pwd_win}%f'
