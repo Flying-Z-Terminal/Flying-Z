@@ -109,6 +109,9 @@ export LESS="-R --mouse" # Wheel scroll in `git log`
 
 # Ensure `cd` command opens path matching underlying filesystem casing because case insensitive paths can break some applications + handle `cd /z` as a safer alternative to `ln -s /ɀ /z`
 cd() {
+  emulate -L zsh
+  setopt extended_glob
+
   # If the -i flag is passed, fallback to the original cd
   if [[ "$1" == "-i" ]]; then
     shift
@@ -128,12 +131,41 @@ cd() {
     return $?
   fi
 
-  # Correct the casing of the given path using `find`
-  corrected_path=$(find "$(dirname "$1")" -maxdepth 1 -iname "$(basename "$1")" 2>/dev/null)
+  # Split the argument into dir + base without forking dirname/basename.
+  # Strip a single trailing slash so `cd foo/` behaves like `cd foo`.
+  local arg="${1%/}"
+  if [[ -z "$arg" ]]; then
+    builtin cd "/"
+    return $?
+  fi
 
-  # If the corrected path exists, change to it
-  if [[ -d "$corrected_path" ]]; then
-    builtin cd "$corrected_path"
+  local dir base
+  if [[ "$arg" == */* ]]; then
+    dir="${arg%/*}"
+    [[ -z "$dir" ]] && dir="/"
+    base="${arg##*/}"
+  else
+    dir="."
+    base="$arg"
+  fi
+
+  # Case-correct by iterating $dir and matching against a lowercased basename.
+  # We can't use a (#i) glob here: on Cygwin's case-insensitive NTFS, zsh
+  # returns the pattern's casing, not the on-disk casing, which would defeat
+  # the whole point of this function. Iterating is fork-free and gives us the
+  # actual filesystem casing via ${entry:t}. (ND-/) → nullglob, include
+  # dotfiles, follow symlinks, directories only.
+  local entry corrected=
+  local lower_base=${base:l}
+  for entry in $dir/*(ND-/); do
+    if [[ ${entry:t:l} == $lower_base ]]; then
+      corrected=$entry
+      break
+    fi
+  done
+
+  if [[ -n $corrected ]]; then
+    builtin cd "$corrected"
   else
     # Fall back to the original path if correction fails
     builtin cd "$1"
