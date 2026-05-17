@@ -28,7 +28,9 @@ else
   compinit -d "$ZSH_COMPDUMP"
 fi
 
-source "$HOME/.flying-z/themes/$ZSH_THEME.zsh-theme"
+_fz_theme="$HOME/.flying-z/themes/$ZSH_THEME.zsh-theme"
+[[ -r $_fz_theme ]] && source $_fz_theme
+unset _fz_theme
 
 if (( $+commands[zoxide] )); then
   eval "$(zoxide init zsh)"
