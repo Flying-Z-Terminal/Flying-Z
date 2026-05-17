@@ -14,7 +14,7 @@ Setting up a nice Cygwin environment was such a chore, but that's no more!
 
 - Polished Linux-like terminal on Windows 11 with one-click installation
 - Installs [Cygwin](https://www.cygwin.com/index.html) and selected utils
-- Installs [Oh My Zsh](https://ohmyz.sh/)
+- Installs [Oh My Zsh](https://ohmyz.sh/) (loaded with a minimal fast-path; see [Tips](#restoring-full-oh-my-zsh) to opt back into the full framework)
 - Installs [Zoxide](https://github.com/ajeetdsouza/zoxide)
 - Installs [Git Credential Manager](https://github.com/git-ecosystem/git-credential-manager)
 - Installs [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) (`CaskaydiaCove Nerd Font Mono`)
@@ -38,6 +38,18 @@ Setting up a nice Cygwin environment was such a chore, but that's no more!
 - Some applications can detect paths incorrectly (eg. `subl ~/.zshrc`) [(help wanted)](https://github.com/Flying-Z-Terminal/Flying-Z/issues/2)
 
 ## Tips
+
+#### Restoring full Oh My Zsh
+
+For speed, Flying-Z's `~/.zshrc` bypasses the Oh My Zsh framework loader (which sources ~23 library files Flying-Z doesn't use and re-runs a full `compinit` on every shell — adding ~600 ms hot path and occasional multi-second freezes on update). Instead it sources only the theme, the `git` plugin, and `zoxide` directly.
+
+If you'd rather use the full framework — for example to enable extra OMZ plugins or rely on its update behaviour — open `~/.zshrc`, delete the `Flying-Z fast load` block (everything between `# Flying-Z fast load …` and the `eval "$(zoxide init zsh)"` line), and add this in its place:
+
+```
+source $ZSH/oh-my-zsh.sh
+```
+
+The Oh My Zsh installation itself is unchanged, so this opts you straight back into the standard experience.
 
 #### Git Credential Manager
 

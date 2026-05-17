@@ -1,6 +1,9 @@
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
 
+# Auto-dedupe PATH so re-sourcing this file never piles up duplicates
+typeset -U path
+
 export PATH=$PATH:~/.flying-z/scripts:~/.local/bin
 
 # NOTE: Do not use Git for Windows, it breaks Windows Terminal. # TODO: Document relevant issue
@@ -77,7 +80,34 @@ DISABLE_UNTRACKED_FILES_DIRTY="true"
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(git zoxide)
 
-source $ZSH/oh-my-zsh.sh
+# Flying-Z fast load -- bypass the OMZ framework loader, which sources
+# 23 lib files we don't use and re-runs a full compinit every shell.
+# To restore the full Oh My Zsh experience, replace this whole block with:
+#   source $ZSH/oh-my-zsh.sh
+
+fpath=($ZSH/plugins/git $fpath)
+
+# Cached compinit: skip the slow audit + dump rebuild unless the dump is
+# missing or older than 24h. OMZ's loader runs full compinit every shell.
+ZSH_COMPDUMP="${ZDOTDIR:-$HOME}/.zcompdump-${HOST/.*/}-${ZSH_VERSION}"
+autoload -Uz compinit
+if [[ -n $ZSH_COMPDUMP(#qNmh-24) ]]; then
+  compinit -C -d "$ZSH_COMPDUMP"
+else
+  compinit -d "$ZSH_COMPDUMP"
+fi
+
+# Theme is shipped to ~/.oh-my-zsh/custom/themes/ by Flying-Z's installer
+ZSH_CUSTOM=${ZSH_CUSTOM:-$ZSH/custom}
+source "$ZSH_CUSTOM/themes/$ZSH_THEME.zsh-theme"
+
+# Git plugin (g/gst/gco/gd/gp/... aliases) + its branch-helper deps in lib/git.zsh
+source "$ZSH/lib/git.zsh"
+source "$ZSH/plugins/git/git.plugin.zsh"
+
+if (( $+commands[zoxide] )); then
+  eval "$(zoxide init zsh)"
+fi
 
 # User configuration
 
