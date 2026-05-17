@@ -14,7 +14,6 @@ Setting up a nice Cygwin environment was such a chore, but that's no more!
 
 - Polished Linux-like terminal on Windows 11 with one-click installation
 - Installs [Cygwin](https://www.cygwin.com/index.html) and selected utils
-- Installs [Oh My Zsh](https://ohmyz.sh/) (loaded with a minimal fast-path; see [Tips](#restoring-full-oh-my-zsh) to opt back into the full framework)
 - Installs [Zoxide](https://github.com/ajeetdsouza/zoxide)
 - Installs [Git Credential Manager](https://github.com/git-ecosystem/git-credential-manager)
 - Installs [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) (`CaskaydiaCove Nerd Font Mono`)
@@ -39,17 +38,26 @@ Setting up a nice Cygwin environment was such a chore, but that's no more!
 
 ## Tips
 
-#### Restoring full Oh My Zsh
+#### Installing Oh My Zsh alongside Flying-Z
 
-For speed, Flying-Z's `~/.zshrc` bypasses the Oh My Zsh framework loader (which sources ~23 library files Flying-Z doesn't use and re-runs a full `compinit` on every shell — adding ~600 ms hot path and occasional multi-second freezes on update). Instead it sources only the theme, the `git` plugin, and `zoxide` directly.
+Flying-Z does not install Oh My Zsh — sourcing OMZ's framework loader on every shell adds ~600 ms hot path (plus occasional multi-second freezes when its completion dump invalidates). The Hapin theme, `zoxide`, and a cached `compinit` are wired up directly in `~/.zshrc`.
 
-If you'd rather use the full framework — for example to enable extra OMZ plugins or rely on its update behaviour — open `~/.zshrc`, delete the `Flying-Z fast load` block (everything between `# Flying-Z fast load …` and the `eval "$(zoxide init zsh)"` line), and add this in its place:
+If you want OMZ's plugin ecosystem (or its built-in aliases) on top of Flying-Z, you can install it yourself without losing the Hapin theme:
 
-```
-source $ZSH/oh-my-zsh.sh
-```
+1. Install OMZ:
+   ```
+   sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --keep-zshrc
+   ```
+   The `--keep-zshrc` flag preserves Flying-Z's `~/.zshrc`. (If you skip it, OMZ will back yours up to `~/.zshrc.pre-oh-my-zsh` and overwrite it with its own.)
 
-The Oh My Zsh installation itself is unchanged, so this opts you straight back into the standard experience.
+2. Add OMZ's loader to your `~/.zshrc`, right above the line that sources the Hapin theme:
+   ```
+   export ZSH="$HOME/.oh-my-zsh"
+   plugins=(git zoxide)        # or whichever OMZ plugins you want
+   source $ZSH/oh-my-zsh.sh
+   ```
+
+3. Keep the existing `source "$HOME/.flying-z/themes/$ZSH_THEME.zsh-theme"` line right where it is — sourcing it *after* OMZ ensures the Hapin prompt wins. (Flying-Z ships Hapin to `~/.flying-z/themes/` rather than to `~/.oh-my-zsh/custom/themes/`, so OMZ's `ZSH_THEME` lookup won't find it; sourcing directly is simpler than symlinking.)
 
 #### Git Credential Manager
 
@@ -79,7 +87,7 @@ Similarly, if you need additional packages you can find them and select them on 
 ## Why did you:
 
 - **Write it in JavaScript?** Because I wouldn't have had the time otherwise.
-- **Choose Oh My Zsh?** Some claim it's outdated. I personally still favor it - and most importantly, it works on Windows.
+- **Drop Oh My Zsh?** Earlier versions of Flying-Z installed it; its framework loader was responsible for ~70% of shell startup time. Most of what it did (theme loading, `zoxide`, completion init) is a few lines of vanilla zsh. See [Installing Oh My Zsh alongside Flying-Z](#installing-oh-my-zsh-alongside-flying-z) if you want it back.
 - **Make any other choice?** Since the code is open source, I didn't necessarily think a huge amount of customizability was worth my effort. I'm happy to accept PRs to improve this project.
 
 ## License

@@ -1,5 +1,5 @@
 import { addFlyingZToWindowsTerminalJSON } from './addFlyingZToWindowsTerminalJSON.mjs';
-import { installOhMyZsh } from './installOhMyZsh.mjs';
+import { copyZshConfig } from './copyZshConfig.mjs';
 import { downloadCygwin } from './downloadCygwin.mjs';
 import { writeFlyingZInitFile } from './writeFlyingZInitFile.mjs';
 import { runFlyingZInitFile } from './runFlyingZInitFile.mjs';
@@ -32,10 +32,10 @@ const pauseUponFailure = () => {
     await downloadCygwin(); // @TODO -- When this fails, we should not proceed to installCygwin, but removing its internal try/catch closes the executable upon failure. Why?
     await installCygwin();
 
-    // 3. Run a ZSH terminal & install oh-my-zsh with =>      sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-    // Create the script for Flying-Z init
+    // 3. Set up the ZSH terminal: write the launcher, install the Flying-Z
+    //    .zshrc + theme, then run the init file once to seed the env.
     await writeFlyingZInitFile();
-    await installOhMyZsh();
+    await copyZshConfig();
     await copyFlyingZThemeFile();
     await runFlyingZInitFile();
 

@@ -17,7 +17,7 @@
     "downloadCygwin": "node ./src/downloadCygwin.mjs --solo",
     "installCygwin": "node ./src/installCygwin.mjs --solo",
     "writeFlyingZInitFile": "node ./src/writeFlyingZInitFile.mjs --solo",
-    "installOhMyZsh": "node ./src/installOhMyZsh.mjs --solo",
+    "copyZshConfig": "node ./src/copyZshConfig.mjs --solo",
     "addFlyingZToWindowsTerminalJSON": "node ./src/addFlyingZToWindowsTerminalJSON.mjs --solo",
     "runFlyingZInitFile": "node ./src/runFlyingZInitFile.mjs --solo",
     "copyAdditionalAssets": "node --inspect-brk ./src/copyAdditionalAssets.mjs --solo",

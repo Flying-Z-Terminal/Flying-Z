@@ -9,14 +9,18 @@ import {
 import { log } from './logger.mjs';
 
 export async function copyFlyingZThemeFile() {
+  log.info('copyFlyingZThemeFile');
   const THEME_FILE_SOURCE = path.join(ASSETS_PATH, THEME_FILE_NAME);
-  const THEME_FILE_DESTINATION = path.join(
+  const THEME_DESTINATION_DIR = path.join(
     USER_CYGWIN_HOME,
-    '.oh-my-zsh',
-    'custom',
-    'themes',
+    '.flying-z',
+    'themes'
+  );
+  const THEME_FILE_DESTINATION = path.join(
+    THEME_DESTINATION_DIR,
     THEME_FILE_NAME
   );
+  fs.mkdirSync(THEME_DESTINATION_DIR, { recursive: true });
   fs.copyFileSync(THEME_FILE_SOURCE, THEME_FILE_DESTINATION);
 }
 
