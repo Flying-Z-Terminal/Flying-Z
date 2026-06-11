@@ -6,6 +6,11 @@
   "author": "Remie Smith",
   "license": "MIT",
   "private": true,
+  "dependenciesMeta": {
+    "esbuild": {
+      "built": true
+    }
+  },
   "scripts": {
     "start": "node ./src/flying-z-installer.mjs",
     "build": "rimraf dist && rimraf build && yarn esbuild --define:process.env.NODE_ENV=\\\"production\\\" ./src/flying-z-installer.mjs --bundle --minify --platform=node --target=node20 --format=iife --external:@aws-sdk/client-s3 --outfile=dist/dist.js && node builder.js",
