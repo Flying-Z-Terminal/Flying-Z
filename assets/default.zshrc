@@ -37,6 +37,44 @@ bindkey '^[[1;5C' forward-word          # Ctrl+Right
 bindkey '^[[1;5D' backward-word         # Ctrl+Left
 bindkey '^[[1;3C' forward-word          # Alt+Right
 bindkey '^[[1;3D' backward-word         # Alt+Left
+bindkey ' '       magic-space           # expand !history references on space
+bindkey '^[[Z'    reverse-menu-complete # Shift-Tab cycles the completion menu backwards
+bindkey '^[[3;5~' kill-word             # Ctrl+Delete deletes the next word
+
+# --- History -----------------------------------------------------------------
+# Without a framework, zsh defaults to a tiny, in-memory-only history (HISTFILE
+# unset, SAVEHIST=0 -> nothing persisted). Restore real persistence plus
+# dedup/sharing, matching what Oh My Zsh's lib/history.zsh provided.
+HISTFILE="$HOME/.zsh_history"
+HISTSIZE=50000
+SAVEHIST=10000
+setopt extended_history          # record timestamps
+setopt hist_expire_dups_first    # trim duplicates first when over SAVEHIST
+setopt hist_ignore_dups          # don't log an immediately repeated command
+setopt hist_ignore_space         # don't log commands prefixed with a space
+setopt hist_verify               # confirm history-expanded lines before running
+setopt share_history             # share history live across open tabs
+
+# --- Colours -----------------------------------------------------------------
+# Coloured `ls` + completion lists (Oh My Zsh's lib/theme-and-appearance.zsh).
+# LS_COLORS is cached like the zoxide init below, to avoid a dircolors fork on
+# every shell start.
+if (( $+commands[dircolors] )); then
+  _fz_dircolors="$HOME/.flying-z/cache/dircolors.zsh"
+  if [[ ! -s $_fz_dircolors || $commands[dircolors] -nt $_fz_dircolors ]]; then
+    command mkdir -p "${_fz_dircolors:h}" 2>/dev/null
+    dircolors -b 2>/dev/null >| "$_fz_dircolors"
+  fi
+  [[ -s $_fz_dircolors ]] && source "$_fz_dircolors"
+  unset _fz_dircolors
+fi
+alias ls='ls --color=auto'
+
+# --- Shell options & aliases (Oh My Zsh lib/misc.zsh, lib/grep.zsh) ----------
+setopt interactive_comments     # allow `# comments` on the interactive command line
+setopt long_list_jobs           # list jobs in the long format by default
+# Colourful grep that skips VCS / dependency dirs
+alias grep="grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn,.idea,.tox,.venv,node_modules}"
 
 # Cached compinit: skip the slow audit + dump rebuild unless the dump is
 # missing or older than 24h.
@@ -52,6 +90,27 @@ fi
 if [[ -s "$ZSH_COMPDUMP" && (! -s "$ZSH_COMPDUMP.zwc" || "$ZSH_COMPDUMP" -nt "$ZSH_COMPDUMP.zwc") ]]; then
   zcompile "$ZSH_COMPDUMP"
 fi
+
+# --- Completion styling ------------------------------------------------------
+# compinit (above) loads the completion system but configures nothing, leaving
+# matching case-sensitive. Restore Oh My Zsh's lib/completion.zsh essentials --
+# most importantly case-insensitive matching, so `cd fly<Tab>` finds Flying-Z.
+zmodload -i zsh/complist
+setopt complete_in_word always_to_end auto_menu
+unsetopt menu_complete flowcontrol
+WORDCHARS=''
+# Case-insensitive, then partial-word, then substring matching.
+zstyle ':completion:*' matcher-list 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' 'r:|=*' 'l:|=* r:|=*'
+zstyle ':completion:*' menu select
+zstyle ':completion:*' special-dirs true
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+zstyle ':completion:*' use-cache yes
+zstyle ':completion:*' cache-path "$HOME/.flying-z/cache/zcompcache"
+zstyle ':completion:*:cd:*' tag-order local-directories directory-stack path-directories
+zstyle ':completion:*' rehash true              # spot newly-installed binaries without `rehash`
+zstyle '*' single-ignored show                  # if there's a lone ignored match, offer it anyway
+# Enable bash-style completion scripts (many tools ship only a bash completer)
+autoload -U +X bashcompinit && bashcompinit
 
 # Directory niceties OMZ users expect (l/ll/la/lsa, md/rd, auto_pushd +
 # numbered dirstack jumps) -- Oh My Zsh's lib/directories.zsh, vendored to
