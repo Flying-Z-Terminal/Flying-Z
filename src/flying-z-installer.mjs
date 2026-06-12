@@ -5,6 +5,7 @@ import { writeFlyingZInitFile } from './writeFlyingZInitFile.mjs';
 import { runFlyingZInitFile } from './runFlyingZInitFile.mjs';
 import { copyFlyingZThemeFile } from './copyFlyingZThemeFile.mjs';
 import { installCygwin } from './installCygwin.mjs';
+import { createRootJunctions } from './createRootJunctions.mjs';
 import { copyAdditionalAssets } from './copyAdditionalAssets.mjs';
 import { installFonts } from './installFonts.mjs';
 import { installZoxide } from './installZoxide.mjs';
@@ -31,6 +32,9 @@ const pauseUponFailure = () => {
     // 2. Cygwin stuff
     await downloadCygwin(); // @TODO -- When this fails, we should not proceed to installCygwin, but removing its internal try/catch closes the executable upon failure. Why?
     await installCygwin();
+    // Junction C:\home and C:\cygdrive\c at the drive root so POSIX paths
+    // passed to native Windows apps (e.g. `subl ~/.zshrc`) resolve correctly.
+    await createRootJunctions();
 
     // 3. Set up the ZSH terminal: write the launcher, install the Flying-Z
     //    .zshrc + theme, then run the init file once to seed the env.
