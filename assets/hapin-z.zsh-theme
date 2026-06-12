@@ -43,12 +43,14 @@ zstyle ':vcs_info:*' formats        "${FMT_VCS_STATUS}"
 zstyle ':vcs_info:*' nvcsformats    ""
 zstyle ':vcs_info:git*+set-message:*' hooks git-untracked
 
-# Optimized check for untracked files.
+# Check for untracked files. No `git rev-parse` guard: vcs_info only fires
+# this hook after detecting a git repo, and inside .git/ itself ls-files
+# just fails silently (same result, one fewer ~60ms Cygwin fork per prompt).
+# --directory collapses untracked dirs to a single entry instead of
+# recursing into them, which matters in large repos.
 +vi-git-untracked() {
-    if [[ $(git rev-parse --is-inside-work-tree 2> /dev/null) == 'true' ]]; then
-        if [[ -n $(git ls-files --others --exclude-standard) ]]; then
-            hook_com[staged]+="%{$hapin_reset_color%} %{$hapin_red%}●"
-        fi
+    if [[ -n $(git ls-files --others --exclude-standard --directory --no-empty-directory 2> /dev/null) ]]; then
+        hook_com[staged]+="%{$hapin_reset_color%} %{$hapin_red%}●"
     fi
 }
 

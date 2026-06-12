@@ -28,12 +28,25 @@ else
   compinit -d "$ZSH_COMPDUMP"
 fi
 
+# Byte-compile the dump so zsh can mmap it instead of re-parsing ~1k lines.
+if [[ -s "$ZSH_COMPDUMP" && (! -s "$ZSH_COMPDUMP.zwc" || "$ZSH_COMPDUMP" -nt "$ZSH_COMPDUMP.zwc") ]]; then
+  zcompile "$ZSH_COMPDUMP"
+fi
+
 _fz_theme="$HOME/.flying-z/themes/$ZSH_THEME.zsh-theme"
 [[ -r $_fz_theme ]] && source $_fz_theme
 unset _fz_theme
 
+# Cache `zoxide init zsh` output: the fork costs ~40ms per shell under
+# Cygwin. Regenerate whenever the zoxide binary is newer than the cache.
 if (( $+commands[zoxide] )); then
-  eval "$(zoxide init zsh)"
+  _fz_zoxide_init="$HOME/.flying-z/cache/zoxide-init.zsh"
+  if [[ ! -s $_fz_zoxide_init || $commands[zoxide] -nt $_fz_zoxide_init ]]; then
+    command mkdir -p "${_fz_zoxide_init:h}"
+    zoxide init zsh >| "$_fz_zoxide_init"
+  fi
+  source "$_fz_zoxide_init"
+  unset _fz_zoxide_init
 fi
 
 export LESS="-R --mouse" # Wheel scroll in `git log`
