@@ -60,6 +60,15 @@ if (( $+commands[zoxide] )); then
     eval "$(zoxide init zsh)"
   fi
   unset _fz_zoxide_init
+
+  # zoxide is a native Windows exe (no Cygwin build exists). When Cygwin
+  # spawns a native console app whose stdio is the pty, it attaches it to
+  # Windows Terminal's pseudo console (ConPTY) -- which intermittently wedges
+  # the tab until a keypress. The init-time fork above is cached; this keeps
+  # the per-cd `zoxide add` hook off the pty entirely.
+  if (( $+functions[__zoxide_hook] )); then
+    __zoxide_hook() { command zoxide add -- "$(__zoxide_pwd)" </dev/null &>/dev/null }
+  fi
 fi
 
 export LESS="-R --mouse" # Wheel scroll in `git log`
