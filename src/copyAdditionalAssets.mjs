@@ -9,6 +9,7 @@ import {
   USER_CYGWIN_HOME,
   CUSTOM_SCRIPTS_SOURCE_FOLDER,
 } from './constants.mjs';
+import { grantUserOwnership } from './utils/index.mjs';
 import { log } from './logger.mjs';
 
 const TERMINAL_ICON = 'icon.ico';
@@ -25,7 +26,7 @@ function createAssetsFolder() {
 }
 
 // NOTE: Due to an apparent Windows bug/limitation, the user must log in/out before the hotkey will take effect
-function copyDesktopShortcut() {
+async function copyDesktopShortcut() {
   const SHORTCUT_FILE_NAME = 'Flying-Z.lnk';
   const SHORTCUT_FILE_SOURCE = path.join(
     INCLUDES_PATH,
@@ -39,6 +40,7 @@ function copyDesktopShortcut() {
   );
 
   fs.copyFileSync(SHORTCUT_FILE_SOURCE, SHORTCUT_FILE_DESTINATION);
+  await grantUserOwnership(SHORTCUT_FILE_DESTINATION);
 }
 
 function copyTerminalIconFile() {
@@ -54,24 +56,25 @@ function copyTerminalIconFile() {
   });
 }
 
-function copyAdditionalRCFiles() {
+async function copyAdditionalRCFiles() {
   const ADDITIONAL_RC_FILES_SOURCE_DIR = path.join(
     ASSETS_PATH,
     'additional-rc-files'
   );
   const rcFiles = fs.readdirSync(ADDITIONAL_RC_FILES_SOURCE_DIR);
 
-  rcFiles.forEach((itemName) => {
+  for (const itemName of rcFiles) {
     const sourcePath = path.join(ADDITIONAL_RC_FILES_SOURCE_DIR, itemName);
     const destPath = path.join(USER_CYGWIN_HOME, itemName);
 
     if (fs.statSync(sourcePath).isFile()) {
       fs.copyFileSync(sourcePath, destPath);
+      await grantUserOwnership(destPath);
     }
-  });
+  }
 }
 
-function copyCustomScripts() {
+async function copyCustomScripts() {
   const CUSTOM_SCRIPTS_DEST_FOLDER = path.join(
     USER_CYGWIN_HOME,
     '.local',
@@ -80,22 +83,23 @@ function copyCustomScripts() {
 
   const customScripts = fs.readdirSync(CUSTOM_SCRIPTS_SOURCE_FOLDER);
 
-  customScripts.forEach((scriptName) => {
+  for (const scriptName of customScripts) {
     const sourcePath = path.join(CUSTOM_SCRIPTS_SOURCE_FOLDER, scriptName);
     const destPath = path.join(CUSTOM_SCRIPTS_DEST_FOLDER, scriptName);
 
     if (fs.statSync(sourcePath).isFile()) {
       fs.copyFileSync(sourcePath, destPath);
+      await grantUserOwnership(destPath);
     }
-  });
+  }
 }
 
 export async function copyAdditionalAssets() {
   createAssetsFolder();
-  copyDesktopShortcut();
+  await copyDesktopShortcut();
   copyTerminalIconFile();
-  copyAdditionalRCFiles();
-  copyCustomScripts();
+  await copyAdditionalRCFiles();
+  await copyCustomScripts();
 }
 
 if (RUN_SOLO) copyAdditionalAssets();

@@ -1,9 +1,31 @@
 import fs from 'fs';
 import path from 'path';
-import { spawn } from 'child_process';
+import { spawn, execFile } from 'child_process';
+import { promisify } from 'util';
 import unzipper from 'unzipper';
 import Downloader from 'nodejs-file-downloader';
 import { log } from '../logger.mjs';
+
+const execFileAsync = promisify(execFile);
+
+// The installer runs elevated, so anything it creates with Node's fs APIs is
+// owned by BUILTIN\Administrators, and the user only gets read access via the
+// inherited Everyone ACE. (Cygwin-created files don't have this problem: the
+// token's user SID stays the real user under elevation, and Cygwin stamps
+// POSIX perms from it.) Result: the unelevated shell can't write to its own
+// dotfiles -- e.g. `mkdir ~/.flying-z/cache` at zsh startup fails with
+// "Permission denied" on every shell. Hand the files back to the user.
+export async function grantUserOwnership(targetPath) {
+  const user = process.env.USERNAME;
+  const isDir = fs.statSync(targetPath).isDirectory();
+  // /C continues past per-file errors; /Q quiets per-file success output;
+  // /L acts on junctions/symlinks themselves, never their targets.
+  const flags = [...(isDir ? ['/T'] : []), '/C', '/L', '/Q'];
+  const grant = isDir ? `${user}:(OI)(CI)F` : `${user}:F`;
+  await execFileAsync('icacls', [targetPath, '/setowner', user, ...flags]);
+  await execFileAsync('icacls', [targetPath, '/grant', grant, ...flags]);
+  log.info(`Granted ${user} ownership of ${targetPath}`);
+}
 
 export function easySpawn(command, args = [], options = {}) {
   return new Promise((resolve, reject) => {

@@ -42,10 +42,15 @@ unset _fz_theme
 if (( $+commands[zoxide] )); then
   _fz_zoxide_init="$HOME/.flying-z/cache/zoxide-init.zsh"
   if [[ ! -s $_fz_zoxide_init || $commands[zoxide] -nt $_fz_zoxide_init ]]; then
-    command mkdir -p "${_fz_zoxide_init:h}"
-    zoxide init zsh >| "$_fz_zoxide_init"
+    command mkdir -p "${_fz_zoxide_init:h}" 2>/dev/null
+    zoxide init zsh 2>/dev/null >| "$_fz_zoxide_init"
   fi
-  source "$_fz_zoxide_init"
+  if [[ -s $_fz_zoxide_init ]]; then
+    source "$_fz_zoxide_init"
+  else
+    # Cache dir unwritable; take the ~40ms fork rather than a broken shell
+    eval "$(zoxide init zsh)"
+  fi
   unset _fz_zoxide_init
 fi
 

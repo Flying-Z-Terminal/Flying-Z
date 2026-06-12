@@ -7,6 +7,7 @@ import {
   RUN_SOLO,
   USER_CYGWIN_HOME,
 } from './constants.mjs';
+import { grantUserOwnership } from './utils/index.mjs';
 import { log } from './logger.mjs';
 
 export async function copyZshConfig() {
@@ -28,9 +29,11 @@ export async function copyZshConfig() {
       `.zshrc-${Date.now()}.pre-flying-z`
     );
     fs.copyFileSync(ZSH_RC_INTENDED_PATH, backupPath);
+    await grantUserOwnership(backupPath);
   }
 
   fs.copyFileSync(DEFAULT_ZSH_RC_PATH, ZSH_RC_INTENDED_PATH);
+  await grantUserOwnership(ZSH_RC_INTENDED_PATH);
 }
 
 if (RUN_SOLO) copyZshConfig();
