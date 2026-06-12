@@ -41,7 +41,7 @@ export const CYGWIN_INSTALLER_NAME = 'setup-x86_64.exe';
 export const CYGWIN_INSTALLER_PATH = `${DOWNLOAD_PATH}/${CYGWIN_INSTALLER_NAME}`;
 export const CYGWIN_PACKAGE_NAMES =
   '_autorebase,base-cygwin,base-files,bash-completion,bind-utils,bzip2,chere,curl,fzf-zsh,git,gnupg,nano,openssh,ping,procps-ng,subversion,unzip,vim,vim-minimal,wget,whois,zip,zsf-zsh-completion,zsh';
-export const CYGWIN_INSTALLER_ARGS = `--quiet-mode --only-site --site https://mirrors.rit.edu/cygwin/ --arch x64 --root "${CYGWIN_ROOT}" --no-shortcuts --no-startmenu --no-desktop --packages ${CYGWIN_PACKAGE_NAMES}`; // TODO: Make installer truly silent https://silentinstallhq.com/cygwin-silent-install-how-to-guide/
+export const CYGWIN_INSTALLER_ARGS = `--quiet-mode --only-site --site https://mirrors.rit.edu/cygwin/ --arch x86_64 --root "${CYGWIN_ROOT}" --no-shortcuts --no-startmenu --no-desktop --packages ${CYGWIN_PACKAGE_NAMES}`; // TODO: Make installer truly silent https://silentinstallhq.com/cygwin-silent-install-how-to-guide/
 export const WINDOWS_TERMINAL_JSON_PATH = path.join(
   process.env.LOCALAPPDATA,
   'Packages',
