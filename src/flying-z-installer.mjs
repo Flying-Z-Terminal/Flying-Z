@@ -3,7 +3,7 @@ import { copyZshConfig } from './copyZshConfig.mjs';
 import { downloadCygwin } from './downloadCygwin.mjs';
 import { writeFlyingZInitFile } from './writeFlyingZInitFile.mjs';
 import { runFlyingZInitFile } from './runFlyingZInitFile.mjs';
-import { copyFlyingZThemeFile } from './copyFlyingZThemeFile.mjs';
+import { copyFlyingZHomeFiles } from './copyFlyingZHomeFiles.mjs';
 import { installCygwin } from './installCygwin.mjs';
 import { createRootJunctions } from './createRootJunctions.mjs';
 import { copyAdditionalAssets } from './copyAdditionalAssets.mjs';
@@ -37,10 +37,11 @@ const pauseUponFailure = () => {
     await createRootJunctions();
 
     // 3. Set up the ZSH terminal: write the launcher, install the Flying-Z
-    //    .zshrc + theme, then run the init file once to seed the env.
+    //    .zshrc + themes + vendored zsh libs, then run the init file once to
+    //    seed the env.
     await writeFlyingZInitFile();
     await copyZshConfig();
-    await copyFlyingZThemeFile();
+    await copyFlyingZHomeFiles();
     await runFlyingZInitFile();
 
     // 4. Install Caskaydia Cove Nerd Font for Powerline icons -- Do this before we run addFlyingZToWindowsTerminalJSON to avoid any possible error messages about font not existing

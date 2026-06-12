@@ -33,6 +33,14 @@ if [[ -s "$ZSH_COMPDUMP" && (! -s "$ZSH_COMPDUMP.zwc" || "$ZSH_COMPDUMP" -nt "$Z
   zcompile "$ZSH_COMPDUMP"
 fi
 
+# Directory niceties OMZ users expect (l/ll/la/lsa, md/rd, auto_pushd +
+# numbered dirstack jumps) -- Oh My Zsh's lib/directories.zsh, vendored to
+# ~/.flying-z/lib/ by the installer. Must come after compinit (compdef).
+for _fz_lib in "$HOME"/.flying-z/lib/*.zsh(N); do
+  source "$_fz_lib"
+done
+unset _fz_lib
+
 _fz_theme="$HOME/.flying-z/themes/$ZSH_THEME.zsh-theme"
 [[ -r $_fz_theme ]] && source $_fz_theme
 unset _fz_theme

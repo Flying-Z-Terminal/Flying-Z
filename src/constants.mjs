@@ -46,6 +46,8 @@ export const THEME_FILE_NAMES = [
   'hapin-z.zsh-theme',
   'hapin-z-light.zsh-theme',
 ];
+// Zsh lib files vendored from Oh My Zsh, shipped to ~/.flying-z/lib/
+export const OMZ_LIB_ASSETS_PATH = path.join(ASSETS_PATH, 'omz-lib');
 
 export const COPIED_ASSETS_PATH = path.join(CYGWIN_ROOT, 'assets');
 export const ICON_DESTINATION_FOLDER = path.join(COPIED_ASSETS_PATH, 'icons');

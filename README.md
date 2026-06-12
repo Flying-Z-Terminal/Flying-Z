@@ -19,6 +19,7 @@ Setting up a nice Cygwin environment was such a chore, but that's no more!
 - Installs [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) (`CaskaydiaCove Nerd Font Mono`)
 - Custom light/dark Windows-focused ZSH theme based on [Hapin](https://github.com/hanamiyuna/hapin-zsh-theme) — see [Switching to the light theme](#switching-to-the-light-theme)
 - Fast shell startup (~0.2 s cold) — no shell framework, cached completion init, cached `zoxide` init, and fork-free prompt plumbing
+- Familiar directory niceties (`l`/`ll`/`la`, `md`/`rd`, `d` + numbered dirstack jumps) — Oh My Zsh's `lib/directories.zsh`, vendored without the framework loader
 - Automatic Windows Terminal profile configuration
 - Integration with **Context Menu → Open in Terminal**
 - Linux-style <kbd>Ctrl+Alt+T</kbd> hotkey to open the terminal
@@ -48,7 +49,7 @@ Flying-Z ships both Hapin variants to `~/.flying-z/themes/` and installs a light
 
 #### Installing Oh My Zsh alongside Flying-Z
 
-Flying-Z does not install Oh My Zsh — sourcing OMZ's framework loader on every shell adds ~600 ms hot path (plus occasional multi-second freezes when its completion dump invalidates). The Hapin theme, `zoxide`, and a cached `compinit` are wired up directly in `~/.zshrc`.
+Flying-Z does not install Oh My Zsh — sourcing OMZ's framework loader on every shell adds ~600 ms hot path (plus occasional multi-second freezes when its completion dump invalidates). The Hapin theme, `zoxide`, a cached `compinit`, and OMZ's directory aliases (its `lib/directories.zsh`, vendored to `~/.flying-z/lib/`) are wired up directly in `~/.zshrc`.
 
 If you want OMZ's plugin ecosystem (or its built-in aliases) on top of Flying-Z, you can install it yourself without losing the Hapin theme:
 
@@ -95,7 +96,7 @@ Similarly, if you need additional packages you can find them and select them on 
 ## Why did you:
 
 - **Write it in JavaScript?** Because I wouldn't have had the time otherwise.
-- **Drop Oh My Zsh?** Earlier versions of Flying-Z installed it; its framework loader was responsible for ~70% of shell startup time. Most of what it did (theme loading, `zoxide`, completion init) is a few lines of vanilla zsh. See [Installing Oh My Zsh alongside Flying-Z](#installing-oh-my-zsh-alongside-flying-z) if you want it back.
+- **Drop Oh My Zsh?** Earlier versions of Flying-Z installed it; its framework loader was responsible for ~70% of shell startup time. Most of what it did (theme loading, `zoxide`, completion init) is a few lines of vanilla zsh, and the aliases people actually expect (`l`, `ll`, `md`, …) are kept by vendoring OMZ's `lib/directories.zsh` alone. See [Installing Oh My Zsh alongside Flying-Z](#installing-oh-my-zsh-alongside-flying-z) if you want it back.
 - **Make any other choice?** Since the code is open source, I didn't necessarily think a huge amount of customizability was worth my effort. I'm happy to accept PRs to improve this project.
 
 ## License
