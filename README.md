@@ -17,7 +17,8 @@ Setting up a nice Cygwin environment was such a chore, but that's no more!
 - Installs [Zoxide](https://github.com/ajeetdsouza/zoxide)
 - Installs [Git Credential Manager](https://github.com/git-ecosystem/git-credential-manager)
 - Installs [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) (`CaskaydiaCove Nerd Font Mono`)
-- Custom light/dark Windows-focused ZSH theme based on [Hapin](https://github.com/hanamiyuna/hapin-zsh-theme)
+- Custom light/dark Windows-focused ZSH theme based on [Hapin](https://github.com/hanamiyuna/hapin-zsh-theme) — see [Switching to the light theme](#switching-to-the-light-theme)
+- Fast shell startup (~0.2 s cold) — no shell framework, cached completion init, cached `zoxide` init, and fork-free prompt plumbing
 - Automatic Windows Terminal profile configuration
 - Integration with **Context Menu → Open in Terminal**
 - Linux-style <kbd>Ctrl+Alt+T</kbd> hotkey to open the terminal
@@ -37,6 +38,13 @@ Setting up a nice Cygwin environment was such a chore, but that's no more!
 - Some applications can detect paths incorrectly (eg. `subl ~/.zshrc`) [(help wanted)](https://github.com/Flying-Z-Terminal/Flying-Z/issues/2)
 
 ## Tips
+
+#### Switching to the light theme
+
+Flying-Z ships both Hapin variants to `~/.flying-z/themes/` and installs a light color scheme into Windows Terminal alongside the default dark one:
+
+1. In `~/.zshrc`, set `ZSH_THEME="hapin-z-light"` (the toggle is right there, commented out).
+2. In Windows Terminal settings, switch the Flying-Z profile's color scheme from `zenwritten_dark_flying_z` to `one_half_light_z`.
 
 #### Installing Oh My Zsh alongside Flying-Z
 
