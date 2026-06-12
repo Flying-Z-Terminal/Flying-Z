@@ -1,0 +1,201 @@
+#!/bin/bash
+#
+# flying-z-update — upgrade your Flying-Z environment in place.
+#
+# Downloads the official Cygwin installer (verifying its PGP signature), then
+# uses it to upgrade every installed Cygwin package to the latest version. Also
+# refreshes the bundled extras that don't come from Cygwin: zoxide and Git
+# Credential Manager. You never have to visit cygwin.com or click through the
+# wizard yourself.
+#
+# Usage:
+#   flying-z-update [options]
+#
+#   --packages-only   Upgrade Cygwin packages only (skip zoxide / GCM)
+#   --apps-only       Refresh zoxide + Git Credential Manager only
+#   --mirror <url>    Use a specific Cygwin mirror (default: mirrors.rit.edu)
+#   -y, --yes         Don't pause for the "close other tabs" confirmation
+#   -h, --help        Show this help
+#
+# Exit status is non-zero if any stage fails.
+
+set -euo pipefail
+
+# --- Defaults -------------------------------------------------------------
+# Keep this package set in sync with CYGWIN_PACKAGE_NAMES in src/constants.mjs.
+# Passing it on every upgrade means newly-added defaults get installed too,
+# while --upgrade-also bumps everything else already on the system.
+DEFAULT_PACKAGES="_autorebase,base-cygwin,base-files,bash-completion,bind-utils,bzip2,chere,curl,fzf-zsh,git,gnupg,nano,openssh,ping,procps-ng,subversion,unzip,vim,vim-minimal,wget,whois,zip,fzf-zsh-completion,zsh"
+MIRROR="https://mirrors.rit.edu/cygwin/"
+GCM_REPO="git-ecosystem/git-credential-manager"
+
+DO_PACKAGES=1
+DO_APPS=1
+ASSUME_YES=0
+
+# --- Pretty output --------------------------------------------------------
+if [ -t 1 ]; then
+  c_blue=$'\e[34m'; c_green=$'\e[32m'; c_yellow=$'\e[33m'; c_red=$'\e[31m'; c_reset=$'\e[0m'
+else
+  c_blue=; c_green=; c_yellow=; c_red=; c_reset=
+fi
+info()  { printf '%s==>%s %s\n' "$c_blue"   "$c_reset" "$*"; }
+ok()    { printf '%s ✓ %s %s\n' "$c_green"  "$c_reset" "$*"; }
+warn()  { printf '%s ! %s %s\n' "$c_yellow" "$c_reset" "$*" >&2; }
+die()   { printf '%s ✗ %s %s\n' "$c_red"    "$c_reset" "$*" >&2; exit 1; }
+
+usage() {
+  cat <<'EOF'
+flying-z-update — upgrade your Flying-Z environment in place.
+
+Downloads the official Cygwin installer (verifying its PGP signature), then uses
+it to upgrade every installed Cygwin package. Also refreshes the bundled extras
+that don't come from Cygwin: zoxide and Git Credential Manager. You never have to
+visit cygwin.com or click through the wizard yourself.
+
+Usage:
+  flying-z-update [options]
+
+  --packages-only   Upgrade Cygwin packages only (skip zoxide / GCM)
+  --apps-only       Refresh zoxide + Git Credential Manager only
+  --mirror <url>    Use a specific Cygwin mirror (default: mirrors.rit.edu)
+  -y, --yes         Don't pause for the "close other tabs" confirmation
+  -h, --help        Show this help
+
+Note: upgrading replaces core files (e.g. cygwin1.dll) that open shells use.
+Close other terminal tabs first, and restart your tabs when it finishes.
+EOF
+  exit 0
+}
+
+# --- Args -----------------------------------------------------------------
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --packages-only) DO_APPS=0 ;;
+    --apps-only)     DO_PACKAGES=0 ;;
+    --mirror)        shift; MIRROR="${1:?--mirror needs a URL}" ;;
+    -y|--yes)        ASSUME_YES=1 ;;
+    -h|--help)       usage ;;
+    *) die "Unknown option: $1 (try --help)" ;;
+  esac
+  shift
+done
+
+# --- Locate the live Cygwin root (Windows form, e.g. C:\Flying-Z) ----------
+# `cygpath -w /` resolves the root of the running Cygwin install, so this works
+# regardless of where Flying-Z was installed.
+CYG_ROOT_WIN="$(cygpath -w / | sed 's/\\*$//')"
+CYG_ROOT_POSIX="$(cygpath -u "$CYG_ROOT_WIN")"
+info "Flying-Z root: $CYG_ROOT_WIN"
+
+WORKDIR="$(mktemp -d "${TMPDIR:-/tmp}/flying-z-update.XXXXXX")"
+trap 'rm -rf "$WORKDIR"' EXIT
+
+# =========================================================================
+# Stage 1: Cygwin packages
+# =========================================================================
+upgrade_packages() {
+  local setup_url="https://www.cygwin.com/setup-x86_64.exe"
+  local setup_exe="$WORKDIR/setup-x86_64.exe"
+
+  info "Downloading the official Cygwin installer…"
+  curl -fsSL -o "$setup_exe"          "$setup_url"     || die "Could not download the Cygwin installer."
+  curl -fsSL -o "$setup_exe.sig"      "$setup_url.sig" || die "Could not download the installer signature."
+  curl -fsSL -o "$WORKDIR/pubring.asc" "https://www.cygwin.com/key/pubring.asc" \
+                                                       || die "Could not download the Cygwin signing key."
+
+  info "Verifying the installer's PGP signature…"
+  local gpghome="$WORKDIR/gpghome"
+  mkdir -m 700 "$gpghome"
+  gpg --homedir "$gpghome" --quiet --import "$WORKDIR/pubring.asc" 2>/dev/null \
+    || die "Could not import the Cygwin signing key."
+  gpg --homedir "$gpghome" --quiet --trust-model always \
+      --verify "$setup_exe.sig" "$setup_exe" 2>/dev/null \
+    || die "Signature check FAILED — refusing to run an unverified installer."
+  ok "Installer signature verified."
+
+  # Warn about other live Cygwin processes: the installer can't replace files
+  # that are in use (notably cygwin1.dll), and will defer them to a reboot.
+  local others
+  others="$(pgrep -x 'zsh|bash|mintty|sshd' 2>/dev/null | grep -vx "$$" | wc -l || true)"
+  if [ "${others:-0}" -gt 0 ] && [ "$ASSUME_YES" -ne 1 ]; then
+    warn "Other Flying-Z/Cygwin processes are running."
+    warn "Core files in use (e.g. cygwin1.dll) can only be replaced after a reboot."
+    printf '    Close other terminal tabs, then press Enter to continue (Ctrl-C to abort)… '
+    read -r _
+  fi
+
+  # The installer is a native Windows GUI app. --quiet-mode runs it head-less;
+  # --upgrade-also bumps every installed package; passing --packages keeps the
+  # Flying-Z default set present. --no-admin matches how Flying-Z installs into
+  # a user-writable root, so no UAC prompt is needed.
+  info "Upgrading Cygwin packages (this can take a few minutes)…"
+  local cache_win
+  cache_win="$(cygpath -w "$WORKDIR/cache")"
+  "$setup_exe" \
+    --quiet-mode \
+    --no-admin \
+    --upgrade-also \
+    --only-site \
+    --site "$MIRROR" \
+    --root "$CYG_ROOT_WIN" \
+    --local-package-dir "$cache_win" \
+    --packages "$DEFAULT_PACKAGES" \
+    --no-shortcuts --no-startmenu --no-desktop \
+    || die "The Cygwin installer reported an error. See $CYG_ROOT_WIN\\var\\log\\setup.log."
+
+  ok "Cygwin packages upgraded."
+}
+
+# =========================================================================
+# Stage 2: zoxide (native Windows binary; no Cygwin package exists)
+# =========================================================================
+upgrade_zoxide() {
+  info "Updating zoxide…"
+  # zoxide's installer drops the latest build into ~/.local/bin.
+  if curl -sS https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash >/dev/null 2>&1; then
+    [ -f "$HOME/.local/bin/zoxide.exe" ] && chmod +x "$HOME/.local/bin/zoxide.exe"
+    ok "zoxide updated."
+  else
+    warn "zoxide update failed (leaving the existing version in place)."
+  fi
+}
+
+# =========================================================================
+# Stage 3: Git Credential Manager (latest GitHub release)
+# =========================================================================
+upgrade_gcm() {
+  info "Updating Git Credential Manager…"
+  local tag ver url dest
+  # Resolve the latest release tag from the redirect GitHub serves for /latest.
+  tag="$(curl -fsSLI -o /dev/null -w '%{url_effective}' \
+         "https://github.com/$GCM_REPO/releases/latest" 2>/dev/null | sed 's#.*/tag/##')"
+  if [ -z "$tag" ]; then
+    warn "Could not determine the latest GCM release (leaving the existing version in place)."
+    return 0
+  fi
+  ver="${tag#v}"
+  url="https://github.com/$GCM_REPO/releases/download/$tag/gcm-win-x86-$ver.zip"
+  dest="$CYG_ROOT_POSIX/usr/libexec/git-core"
+
+  info "  Installing GCM $ver…"
+  if curl -fsSL -o "$WORKDIR/gcm.zip" "$url" 2>/dev/null; then
+    mkdir -p "$dest"
+    unzip -o -q "$WORKDIR/gcm.zip" -d "$dest" || { warn "Could not extract GCM archive."; return 0; }
+    ok "Git Credential Manager updated to $ver."
+  else
+    warn "Could not download GCM $ver (leaving the existing version in place)."
+  fi
+}
+
+# --- Run ------------------------------------------------------------------
+[ "$DO_PACKAGES" -eq 1 ] && upgrade_packages
+if [ "$DO_APPS" -eq 1 ]; then
+  upgrade_zoxide
+  upgrade_gcm
+fi
+
+echo
+ok "Flying-Z is up to date."
+warn "Restart your terminal tabs to load the upgraded binaries."
+warn "If the installer deferred any in-use files, reboot to finish."

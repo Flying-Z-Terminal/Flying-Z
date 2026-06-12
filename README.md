@@ -20,6 +20,7 @@ Setting up a nice Cygwin environment was such a chore, but that's no more!
 - Custom light/dark Windows-focused ZSH theme based on [Hapin](https://github.com/hanamiyuna/hapin-zsh-theme) — see [Switching to the light theme](#switching-to-the-light-theme)
 - Fast shell startup (~0.2 s cold) — no shell framework, cached completion init, cached `zoxide` init, and fork-free prompt plumbing
 - Familiar directory niceties (`l`/`ll`/`la`, `md`/`rd`, `d` + numbered dirstack jumps) — Oh My Zsh's `lib/directories.zsh`, vendored without the framework loader
+- One-command in-place updates via `flying-z-update` (signature-verified Cygwin upgrade + zoxide/GCM refresh) — see [Keeping up to date](#keeping-up-to-date)
 - Automatic Windows Terminal profile configuration
 - Integration with **Context Menu → Open in Terminal**
 - Linux-style <kbd>Ctrl+Alt+T</kbd> hotkey to open the terminal
@@ -87,11 +88,41 @@ You may also wish to add:
         pager = less -R --mouse
 ```
 
-## Keeping up to date (and adding additional packages)
+## Keeping up to date
 
-There's no built-in updater at this time, so it's advised you periodically download the latest Cygwin installer and run it. Unless you have another Cygwin installation on the machine, it should automatically find the installation from Flying-Z. When you run the installer, just press "Next" all the way through to have your environment upgraded.
+Flying-Z ships a `flying-z-update` command that upgrades your whole environment in place — you never have to visit cygwin.com or click through the installer wizard yourself. From any Flying-Z terminal:
 
-Similarly, if you need additional packages you can find them and select them on the package management screen of the Cygwin installer.
+```
+flying-z-update
+```
+
+It will:
+
+1. Download the **official Cygwin installer** and **verify its PGP signature** before running anything (a bad signature aborts the update).
+2. Upgrade **every installed Cygwin package** to the latest version (`setup --upgrade-also`), and pull in any packages newly added to the Flying-Z default set.
+3. Refresh the bundled extras that don't come from Cygwin: **[zoxide](https://github.com/ajeetdsouza/zoxide)** and **[Git Credential Manager](https://github.com/git-ecosystem/git-credential-manager)** (latest release).
+
+Options:
+
+| Flag | Effect |
+| --- | --- |
+| `--packages-only` | Upgrade Cygwin packages only (skip zoxide / GCM) |
+| `--apps-only` | Refresh zoxide + Git Credential Manager only |
+| `--mirror <url>` | Use a specific Cygwin mirror (default: `mirrors.rit.edu`) |
+| `-y`, `--yes` | Skip the "close other tabs" confirmation prompt |
+| `-h`, `--help` | Show usage |
+
+> [!IMPORTANT]
+> Upgrading replaces core files that running shells hold open — most notably `cygwin1.dll`, and Cygwin does not allow one process to straddle two DLL versions. **Close your other terminal tabs before updating, and restart your tabs once it finishes.** If the installer reports that it deferred any in-use files, reboot to complete them. `flying-z-update` warns you about this and pauses (unless you pass `-y`).
+
+### Adding additional packages
+
+`flying-z-update` upgrades what you already have; it doesn't pick new packages for you. To add packages, run the Cygwin installer's package screen once — `flying-z-update` keeps them upgraded afterward. Either launch `setup-x86_64.exe` from cygwin.com and point it at your Flying-Z root (`C:\Flying-Z`), or install a single package non-interactively, e.g.:
+
+```
+setup-x86_64.exe --quiet-mode --no-admin --root C:\Flying-Z \
+  --site https://mirrors.rit.edu/cygwin/ --packages tmux
+```
 
 ## Why did you:
 
