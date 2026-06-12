@@ -18,6 +18,26 @@ ZSH_THEME="hapin-z"
 
 autoload -U colors && colors # Fix colors - https://stackoverflow.com/a/2534676/
 
+# --- Keybindings -------------------------------------------------------------
+# Flying-Z ships no shell framework, so keys Linux/macOS users expect (Home/End,
+# Delete, Ctrl/Alt+arrow word-nav) must be bound explicitly. Older Cygwin
+# consoles silently remapped these onto ^A/^E/^[f/^[b, so an unconfigured zsh
+# appeared to "just work"; Cygwin 3.6's ConPTY rework instead passes the raw
+# xterm escape sequences through. We bind both the normal-mode (ESC[) and
+# application-mode (ESC O) forms so the keys work regardless of cursor mode.
+bindkey -e                              # emacs keymap (explicit)
+bindkey '^[[H'   beginning-of-line      # Home
+bindkey '^[OH'   beginning-of-line
+bindkey '^[[1~'  beginning-of-line
+bindkey '^[[F'   end-of-line            # End
+bindkey '^[OF'   end-of-line
+bindkey '^[[4~'  end-of-line
+bindkey '^[[3~'  delete-char            # Delete
+bindkey '^[[1;5C' forward-word          # Ctrl+Right
+bindkey '^[[1;5D' backward-word         # Ctrl+Left
+bindkey '^[[1;3C' forward-word          # Alt+Right
+bindkey '^[[1;3D' backward-word         # Alt+Left
+
 # Cached compinit: skip the slow audit + dump rebuild unless the dump is
 # missing or older than 24h.
 ZSH_COMPDUMP="${ZDOTDIR:-$HOME}/.zcompdump-${HOST/.*/}-${ZSH_VERSION}"
