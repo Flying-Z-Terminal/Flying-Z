@@ -50,7 +50,10 @@ export const WINDOWS_TERMINAL_JSON_PATH = path.join(
   'settings.json'
 );
 export const DEFAULT_ZSH_RC_PATH = path.join(ASSETS_PATH, 'default.zshrc');
-export const THEME_FILE_NAME = 'hapin-z.zsh-theme';
+export const THEME_FILE_NAMES = [
+  'hapin-z.zsh-theme',
+  'hapin-z-light.zsh-theme',
+];
 
 export const COPIED_ASSETS_PATH = path.join(CYGWIN_ROOT, 'assets');
 export const ICON_DESTINATION_FOLDER = path.join(COPIED_ASSETS_PATH, 'icons');
