@@ -24,14 +24,6 @@ export const DOWNLOAD_PATH = path.join(
   'flying-z-cygwin-download/'
 );
 export const INIT_FILE_NAME = 'flying-z-init.bat';
-export const INIT_FILES_SOURCE_FOLDER = path.join(
-  INCLUDES_PATH,
-  'init-scripts'
-);
-export const INIT_FILE_SOURCE_PATH = path.join(
-  INIT_FILES_SOURCE_FOLDER,
-  INIT_FILE_NAME
-);
 export const INIT_FILE_DESTINATION_PATH = path.join(
   CYGWIN_ROOT,
   INIT_FILE_NAME
@@ -40,7 +32,7 @@ export const INIT_FILE_DESTINATION_PATH = path.join(
 export const CYGWIN_INSTALLER_NAME = 'setup-x86_64.exe';
 export const CYGWIN_INSTALLER_PATH = `${DOWNLOAD_PATH}/${CYGWIN_INSTALLER_NAME}`;
 export const CYGWIN_PACKAGE_NAMES =
-  '_autorebase,base-cygwin,base-files,bash-completion,bind-utils,bzip2,chere,curl,fzf-zsh,git,gnupg,nano,openssh,ping,procps-ng,subversion,unzip,vim,vim-minimal,wget,whois,zip,zsf-zsh-completion,zsh';
+  '_autorebase,base-cygwin,base-files,bash-completion,bind-utils,bzip2,chere,curl,fzf-zsh,git,gnupg,nano,openssh,ping,procps-ng,subversion,unzip,vim,vim-minimal,wget,whois,zip,fzf-zsh-completion,zsh';
 export const CYGWIN_INSTALLER_ARGS = `--quiet-mode --only-site --site https://mirrors.rit.edu/cygwin/ --arch x86_64 --root "${CYGWIN_ROOT}" --no-shortcuts --no-startmenu --no-desktop --packages ${CYGWIN_PACKAGE_NAMES}`; // TODO: Make installer truly silent https://silentinstallhq.com/cygwin-silent-install-how-to-guide/
 export const WINDOWS_TERMINAL_JSON_PATH = path.join(
   process.env.LOCALAPPDATA,

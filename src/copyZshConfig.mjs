@@ -20,7 +20,7 @@ export async function copyZshConfig() {
   const zshRcAlreadyExists = fs.existsSync(ZSH_RC_INTENDED_PATH);
 
   if (zshRcAlreadyExists) {
-    log.error(
+    log.warn(
       '.zshrc file already exists. Backing up with extension .pre-flying-z'
     );
     const backupPath = path.join(

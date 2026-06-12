@@ -7,7 +7,7 @@ import { copyFlyingZThemeFile } from './copyFlyingZThemeFile.mjs';
 import { installCygwin } from './installCygwin.mjs';
 import { copyAdditionalAssets } from './copyAdditionalAssets.mjs';
 import { installFonts } from './installFonts.mjs';
-import { installZshPlugins } from './installZshPlugins.mjs';
+import { installZoxide } from './installZoxide.mjs';
 import { ensureAdmin } from './ensureAdmin.mjs';
 import { runFlyingZTerminal } from './runFlyingZTerminal.mjs';
 import { installGitCredentialManager } from './installGitCredentialManager.mjs';
@@ -45,8 +45,8 @@ const pauseUponFailure = () => {
     // 5. Install to terminal
     await addFlyingZToWindowsTerminalJSON();
 
-    // 6. Install additional assets and plugins
-    await installZshPlugins();
+    // 6. Install additional assets and zoxide
+    await installZoxide();
     await copyAdditionalAssets();
 
     // 7. Install GCM
@@ -59,8 +59,6 @@ const pauseUponFailure = () => {
       - Uninstaller
       - Option to not make Flying-Z the default/not integrate with contextMenu
       - A way to prevent history from being mangled on resize
-      - Less slowness in ZSH itself
-      - Auto-install Git-Credential-Manager
 
   */
     log.warn(

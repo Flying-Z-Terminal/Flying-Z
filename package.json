@@ -20,7 +20,7 @@
     "copyZshConfig": "node ./src/copyZshConfig.mjs --solo",
     "addFlyingZToWindowsTerminalJSON": "node ./src/addFlyingZToWindowsTerminalJSON.mjs --solo",
     "runFlyingZInitFile": "node ./src/runFlyingZInitFile.mjs --solo",
-    "copyAdditionalAssets": "node --inspect-brk ./src/copyAdditionalAssets.mjs --solo",
+    "copyAdditionalAssets": "node ./src/copyAdditionalAssets.mjs --solo",
     "copyFlyingZThemeFile": "node ./src/copyFlyingZThemeFile.mjs --solo",
     "installFonts": "node ./src/installFonts.mjs --solo"
   },

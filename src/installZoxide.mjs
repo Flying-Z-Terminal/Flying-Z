@@ -6,8 +6,8 @@ import { log } from './logger.mjs';
 const CYGWIN_BIN_PATH = path.join(CYGWIN_ROOT, 'bin');
 const BASH_EXE = path.join(CYGWIN_BIN_PATH, 'bash.exe');
 
-export async function installZshPlugins() {
-  log.info(BASH_EXE);
+export async function installZoxide() {
+  log.info('installZoxide');
   await easySpawn(
     BASH_EXE,
     [
@@ -25,4 +25,4 @@ export async function installZshPlugins() {
   );
 }
 
-if (RUN_SOLO) installZshPlugins()
+if (RUN_SOLO) installZoxide();
