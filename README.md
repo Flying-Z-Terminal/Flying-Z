@@ -37,9 +37,31 @@ Setting up a nice Cygwin environment was such a chore, but that's no more!
 - Hotkey relies on a desktop shortcut and requires logout or reboot to activate
 - Mouse and wheel interactions are imperfect. Must hold <kbd>Shift</kbd> to select text under certain circumstances
 - Terminal icon color cannot be set per theme [(help wanted - external)](https://github.com/microsoft/terminal/issues/15264#issuecomment-2491023334)
-- Some applications can detect paths incorrectly (eg. `subl ~/.zshrc`) [(help wanted)](https://github.com/Flying-Z-Terminal/Flying-Z/issues/2)
+- Some applications can detect paths incorrectly (eg. `subl ~/.zshrc`). Flying-Z resolves the common case via root junctions (see [How native apps resolve POSIX paths](#how-native-apps-resolve-posix-paths)), but only while the app's working directory is on the `C:` drive [(help wanted)](https://github.com/Flying-Z-Terminal/Flying-Z/issues/2)
 
 ## Tips
+
+#### How native apps resolve POSIX paths
+
+Cygwin doesn't translate POSIX paths when it launches a **native** Windows app, so `subl ~/.zshrc` hands Sublime the literal string `/home/<you>/.zshrc`, and `git`/editors/etc. get raw `/…` paths. Windows resolves those against the current drive root. Flying-Z makes that land on the real files by creating two junctions at the `C:` root during install:
+
+- `C:\home` → `C:\Flying-Z\home` (covers `/home/<you>/…`)
+- `C:\ɀ\c` → `C:\` (covers `/ɀ/c/…` — `ɀ` is Flying-Z's short cygdrive prefix, replacing `/cygdrive`)
+
+Both junctions are **hardened**: an `icacls` deny-"List Folder" ACE for Everyone blocks *enumeration* through them, so junction-following recursive deleters (`git clean`, `del /s`, `robocopy /MIR`, `Remove-Item -Recurse`) can't descend into the target. Opening a path that goes **into a subdirectory** of the target still works (descending needs Traverse, which isn't denied — only List is), which covers every normal path: `/ɀ/c/Users/…`, `/ɀ/c/Projects/…`, `/home/<you>/…`.
+
+The `C:\ɀ\c → C:\` junction points at the whole drive, so the installer **proves** on your machine that this hardening actually blocks enumeration and deletion *before* forming any junction; if it can't prove it, it forms none (path resolution is disabled rather than risked).
+
+**When the deny-List can bite (rare):** because List is denied, a **native Windows app** handed one of these prefixed paths can't open a file that sits *directly at the junction's target root*, nor list that root itself. Concretely:
+
+- For `C:\ɀ\c → C:\`: a file living right at `C:\` (e.g. `/ɀ/c/pagefile.sys`, or `/ɀ/c/note.txt` for a `C:\note.txt` you created), and a bare listing of `/ɀ/c`.
+- For `C:\home → C:\Flying-Z\home`: a file dropped directly in the home *root* (`/home/somefile`).
+
+Anything that descends into a **subdirectory** is fine — which is every real path, including `/home/<you>/.zshrc` (it's inside your user folder `C:\home\<you>\`, reached by descending, not by listing the home root). Two things keep this from mattering in practice: your **Cygwin shell** is unaffected — it reaches `/ɀ/c` through Cygwin's own fstab mount, not the Windows junction, so `ls /ɀ/c` works normally — and real native-app paths descend into a subdirectory. If you ever hit it, hand the app the file's real Windows path (`C:\note.txt`) instead of the prefixed one.
+
+Caveat: resolution only works while the native app's working directory is on the `C:` drive (POSIX paths resolve against the *current* drive).
+
+
 
 #### Switching to the light theme
 

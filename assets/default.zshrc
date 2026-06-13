@@ -165,6 +165,9 @@ cd() {
   fi
 
   # Custom behavior: redirect `cd /z` to `cd /ɀ`
+  # NOTE: the `/ɀ` prefix here must match CYGDRIVE_PREFIX in src/constants.mjs
+  # (the installer writes it into fstab and builds the C:\ɀ\c root junction from
+  # the same value). If you change the prefix, change it there too.
   if [[ "$1" == "/z" ]]; then
     builtin cd "/ɀ"
     return $?

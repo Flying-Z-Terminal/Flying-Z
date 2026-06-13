@@ -12,6 +12,15 @@ export const ASSETS_PATH = path.join(root, 'assets');
 export const INCLUDES_PATH = path.join(root, 'includes');
 
 export const CYGWIN_ROOT = 'C:\\Flying-Z';
+
+// Cygwin's default cygdrive prefix is `/cygdrive`; we shorten it to U+0240
+// (ɀ), so `/cygdrive/c/...` becomes `/ɀ/c/...`. This is the LIVE prefix Cygwin
+// emits -- including when it hands POSIX paths to native Windows apps -- so the
+// drive-root junction MUST be built from the same value. Both installCygwin.mjs
+// (the fstab rewrite) and createRootJunctions.mjs (the junction path) derive
+// from this one constant, so they can never drift. Bare path segment: no
+// leading slash, no backslash. (Keep this file UTF-8 so the glyph survives.)
+export const CYGDRIVE_PREFIX = 'ɀ';
 export const BASH_LAUNCHER_BATCH_FILE = path.join(CYGWIN_ROOT, 'Cygwin.bat');
 export const USER_CYGWIN_HOME = path.join(
   CYGWIN_ROOT,
