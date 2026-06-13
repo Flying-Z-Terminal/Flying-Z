@@ -8,6 +8,15 @@ const root = isPackaged ? 'C:\\snapshot\\Flying-Z' : process.cwd();
 
 export const RUN_SOLO = process.argv.includes('--solo');
 
+// Opt-in flag for the C: root junctions (createRootJunctions.mjs). They make
+// native Windows apps resolve POSIX paths, but one of them targets the WHOLE
+// drive (C:\ɀ\c -> C:\) and relies entirely on an icacls deny-List ACE to stop
+// recursive deleters from following it into C:\. That power is gated off by
+// default; a user opts in by re-running the installer with --enable-root-junctions.
+export const ENABLE_ROOT_JUNCTIONS = process.argv.includes(
+  '--enable-root-junctions'
+);
+
 export const ASSETS_PATH = path.join(root, 'assets');
 export const INCLUDES_PATH = path.join(root, 'includes');
 

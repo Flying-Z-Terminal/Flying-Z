@@ -43,14 +43,23 @@ Setting up a nice Cygwin environment was such a chore, but that's no more!
 
 #### How native apps resolve POSIX paths
 
-Cygwin doesn't translate POSIX paths when it launches a **native** Windows app, so `subl ~/.zshrc` hands Sublime the literal string `/home/<you>/.zshrc`, and `git`/editors/etc. get raw `/…` paths. Windows resolves those against the current drive root. Flying-Z makes that land on the real files by creating two junctions at the `C:` root during install:
+Cygwin doesn't translate POSIX paths when it launches a **native** Windows app, so `subl ~/.zshrc` hands Sublime the literal string `/home/<you>/.zshrc`, and `git`/editors/etc. get raw `/…` paths. Windows resolves those against the current drive root. Flying-Z can make that land on the real files by creating two junctions at the `C:` root:
 
 - `C:\home` → `C:\Flying-Z\home` (covers `/home/<you>/…`)
 - `C:\ɀ\c` → `C:\` (covers `/ɀ/c/…` — `ɀ` is Flying-Z's short cygdrive prefix, replacing `/cygdrive`)
 
-Both junctions are **hardened**: an `icacls` deny-"List Folder" ACE for Everyone blocks *enumeration* through them, so junction-following recursive deleters (`git clean`, `del /s`, `robocopy /MIR`, `Remove-Item -Recurse`) can't descend into the target. Opening a path that goes **into a subdirectory** of the target still works (descending needs Traverse, which isn't denied — only List is), which covers every normal path: `/ɀ/c/Users/…`, `/ɀ/c/Projects/…`, `/home/<you>/…`.
+> [!WARNING]
+> **This is opt-in, and here's why.** The `C:\ɀ\c` junction points at your **entire `C:` drive**. The *only* thing stopping a junction-following recursive deleter — `git clean`, `del /s`, `robocopy /MIR`, `rm -rf`, `Remove-Item -Recurse` — from walking through it and **erasing your whole C: drive** is an `icacls` deny-"List Folder" ACE on the junction. If that ACE is missing or gets stripped, an ordinary recursive delete that wanders in can nuke the drive. **Do not remove or alter the ACE, and don't hand-create a `C:\ɀ\c → C:\` junction yourself without it.**
+>
+> Because of that blast radius, Flying-Z does **not** create these junctions by default. To turn the feature on, re-run the installer with the **`--enable-root-junctions`** flag:
+>
+> ```
+> flying-z-installer.exe --enable-root-junctions
+> ```
+>
+> When enabled, the installer first **proves on your machine** that the deny-List ACE actually blocks enumeration *and* recursive deletion through a throwaway test junction; only if that proof passes does it form the real junctions, each individually verified and removed if it can't be confirmed hardened (fail-closed). If the proof fails, it creates nothing. (An uninstaller to remove them cleanly is planned; until then see *When the deny-List can bite* below and the comments in `src/createRootJunctions.mjs` for manual removal: strip the ACE with `icacls … /remove:d *S-1-1-0`, then `rmdir`.)
 
-The `C:\ɀ\c → C:\` junction points at the whole drive, so the installer **proves** on your machine that this hardening actually blocks enumeration and deletion *before* forming any junction; if it can't prove it, it forms none (path resolution is disabled rather than risked).
+When the junctions are enabled, both are **hardened** by that deny-List ACE: it blocks *enumeration* through them (the dangerous descent above), while opening a path that goes **into a subdirectory** of the target still works (descending needs Traverse, which isn't denied — only List is). That covers every normal path: `/ɀ/c/Users/…`, `/ɀ/c/Projects/…`, `/home/<you>/…`.
 
 **When the deny-List can bite (rare):** because List is denied, a **native Windows app** handed one of these prefixed paths can't open a file that sits *directly at the junction's target root*, nor list that root itself. Concretely:
 

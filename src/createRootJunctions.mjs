@@ -2,7 +2,12 @@ import fs from 'fs/promises';
 import path from 'path';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
-import { CYGWIN_ROOT, CYGDRIVE_PREFIX, RUN_SOLO } from './constants.mjs';
+import {
+  CYGWIN_ROOT,
+  CYGDRIVE_PREFIX,
+  RUN_SOLO,
+  ENABLE_ROOT_JUNCTIONS,
+} from './constants.mjs';
 import { log } from './logger.mjs';
 
 const execFileAsync = promisify(execFile);
@@ -31,6 +36,16 @@ const execFileAsync = promisify(execFile);
 //
 // Limitation: a POSIX path is resolved against the *current* drive, so this
 // only helps while the app's working directory is on the Cygwin root's drive.
+//
+// DANGER / OPT-IN: the C:\ɀ\c -> C:\ junction points at the WHOLE DRIVE. The
+// icacls deny-List ACE is the ONLY thing stopping a junction-following
+// recursive deleter (git clean, del /s, robocopy /MIR, rm -rf, Remove-Item
+// -Recurse) from walking through it and destroying the entire C: drive. If that
+// ACE is ever stripped or the junction is created without it, an ordinary
+// recursive delete can nuke C:\. Because of that blast radius this whole feature
+// is OPT-IN: it does nothing unless the installer is run with
+// --enable-root-junctions (ENABLE_ROOT_JUNCTIONS). A user upgrades into it by
+// re-running the installer with that flag; everything else works without it.
 
 const DRIVE_ROOT = path.parse(CYGWIN_ROOT).root; // e.g. C:\
 const DRIVE_LETTER = DRIVE_ROOT[0].toLowerCase();
@@ -445,6 +460,17 @@ async function removeLegacyCygdriveJunction() {
 
 export async function createRootJunctions() {
   log.info('createRootJunctions');
+
+  // OPT-IN GATE: forming a junction to the whole C: drive is dangerous (see the
+  // DANGER note at the top of this file), so do nothing unless the user
+  // explicitly asked for it by re-running the installer with
+  // --enable-root-junctions.
+  if (!ENABLE_ROOT_JUNCTIONS) {
+    log.info(
+      'Root junctions are opt-in and were not requested; skipping. Native-app POSIX path resolution stays off. Re-run the installer with --enable-root-junctions to enable it.'
+    );
+    return;
+  }
 
   // HARD REQUIREMENT: never form a production junction unless we've proven, on
   // THIS machine, that the deny-List ACE blocks enumeration and

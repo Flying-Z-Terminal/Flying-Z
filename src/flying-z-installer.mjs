@@ -33,9 +33,11 @@ const pauseUponFailure = () => {
     await downloadCygwin(); // @TODO -- When this fails, we should not proceed to installCygwin, but removing its internal try/catch closes the executable upon failure. Why?
     await installCygwin();
     // Junction C:\home and C:\ɀ\c at the drive root so POSIX paths passed to
-    // native Windows apps (e.g. `subl ~/.zshrc`) resolve correctly. Only forms
-    // junctions after proving on this machine that their deny-List hardening
-    // blocks enumeration/deletion through them (else forms none -- fail-closed).
+    // native Windows apps (e.g. `subl ~/.zshrc`) resolve correctly. OPT-IN: the
+    // C:\ɀ\c -> C:\ junction targets the whole drive, so this is a no-op unless
+    // the installer was run with --enable-root-junctions. When enabled, it only
+    // forms junctions after proving on this machine that their deny-List
+    // hardening blocks enumeration/deletion through them (else forms none).
     await createRootJunctions();
 
     // 3. Set up the ZSH terminal: write the launcher, install the Flying-Z
