@@ -26,6 +26,21 @@ autoload -U colors && colors # Fix colors - https://stackoverflow.com/a/2534676/
 # xterm escape sequences through. We bind both the normal-mode (ESC[) and
 # application-mode (ESC O) forms so the keys work regardless of cursor mode.
 bindkey -e                              # emacs keymap (explicit)
+
+# Prefix history search on the arrow keys (Oh My Zsh's lib/key-bindings.zsh).
+# up-line-or-beginning-search: if the cursor is on the first line, search
+# backward for a previous command that *begins with* whatever is already typed
+# (so `cl` + Up recalls the last `cl...`); otherwise just move the cursor up a
+# line. Without these widgets bound, zsh's default up-line-or-history ignores
+# the typed prefix and always jumps to the immediately previous command.
+autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
+zle -N up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+bindkey '^[[A'  up-line-or-beginning-search    # Up (normal mode)
+bindkey '^[OA'  up-line-or-beginning-search    # Up (application mode)
+bindkey '^[[B'  down-line-or-beginning-search  # Down (normal mode)
+bindkey '^[OB'  down-line-or-beginning-search  # Down (application mode)
+
 bindkey '^[[H'   beginning-of-line      # Home
 bindkey '^[OH'   beginning-of-line
 bindkey '^[[1~'  beginning-of-line
@@ -147,6 +162,30 @@ if (( $+commands[zoxide] )); then
   # the per-cd `zoxide add` hook off the pty entirely.
   if (( $+functions[__zoxide_hook] )); then
     __zoxide_hook() { command zoxide add -- "$(__zoxide_pwd)" </dev/null &>/dev/null }
+  fi
+
+  # Same ConPTY rule for the `z` jump command. zoxide's query output is
+  # captured by $(...) -- a pipe, already off the pty -- but its stdin and
+  # stderr were still the pty, and Cygwin enables the pseudo-console for a
+  # native exe if *any* of its three stdio handles is the pty. That wedged the
+  # tab until a keypress (the dir changed, but no new prompt appeared). Push
+  # stdin/stderr to /dev/null too so no zoxide.exe call touches the pty. `zi`
+  # is left as-is: its interactive `-i` picker genuinely needs the tty.
+  if (( $+functions[__zoxide_z] )); then
+    function __zoxide_z() {
+      if [[ "$#" -eq 0 ]]; then
+        __zoxide_cd ~
+      elif [[ "$#" -eq 1 ]] && { [[ -d "$1" ]] || [[ "$1" = '-' ]] || [[ "$1" =~ ^[-+][0-9]$ ]]; }; then
+        __zoxide_cd "$1"
+      elif [[ "$@[-1]" == "${__zoxide_z_prefix}"* ]]; then
+        builtin local result="${@[-1]}"
+        __zoxide_cd "${result:${#__zoxide_z_prefix}}"
+      else
+        builtin local result
+        result="$(command zoxide query --exclude "$(__zoxide_pwd)" -- "$@" </dev/null 2>/dev/null)" &&
+          __zoxide_cd "${result}"
+      fi
+    }
   fi
 fi
 
